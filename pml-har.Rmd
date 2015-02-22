@@ -107,7 +107,7 @@ predictions <- sapply(1:8, function(i) {
 predictions
 ```
 
-While there is agreement for most of the examples, there are a few discrepancies. Using a "majority rules" approach, we run into issue with #8 and #19 as they are evenly split. In those cases we will use the letter predicted by the seventh predictor, as it had the lowest out-of-sample error rate.
+While there is agreement for most of the examples, there are a few discrepancies. Using a "majority rules" approach, we run into issue with #8 and #19 as they are evenly split. In those cases we will use the letter predicted by the fifth predictor, as it had the lowest out-of-sample error rate.
 
 ```{r}
 answers <- c("B","A","B","A","A","E","D","B","A","A","B","C","B","A","E","E","A","B","B","B")

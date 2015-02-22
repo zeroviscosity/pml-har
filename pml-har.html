@@ -60,10 +60,9 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 
 <p>The Human Activity Recognition (HAR) dataset provides a wide range of measurements for subjects performing weight-lifting exercises along with an indicator for how well the exercise was performed. In this study we will be building a model to predict that outcome from a subset of the measurements.</p>
-<pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice
 ## Loading required package: ggplot2</code></pre>
-<pre class="r"><code>set.seed(1234)
+<pre class="r"><code>set.seed(54321)
 trainingAll &lt;- read.csv(&quot;pml-training.csv&quot;)
 dim(trainingAll)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
@@ -107,11 +106,8 @@ for (i in 1:k) {
 <pre class="r"><code>modFit &lt;- list()
 for (i in 1:k) {
   modFit[[i]] &lt;- train(classe ~ ., method=&quot;rf&quot;, data=training[[i]])
-}</code></pre>
-<pre><code>## Loading required package: randomForest
-## randomForest 4.6-10
-## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre class="r"><code># Example
+}
+# Example
 modFit[[1]]</code></pre>
 <pre><code>## Random Forest 
 ## 
@@ -179,7 +175,7 @@ predictions</code></pre>
 ##  [5,] &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot; 
 ##  [6,] &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot; 
 ##  [7,] &quot;D&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot; 
-##  [8,] &quot;D&quot;  &quot;D&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot; 
+##  [8,] &quot;B&quot;  &quot;D&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;D&quot;  &quot;D&quot;  &quot;D&quot; 
 ##  [9,] &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot; 
 ## [10,] &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot; 
 ## [11,] &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot; 
@@ -190,9 +186,9 @@ predictions</code></pre>
 ## [16,] &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot;  &quot;E&quot; 
 ## [17,] &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot; 
 ## [18,] &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot; 
-## [19,] &quot;B&quot;  &quot;A&quot;  &quot;B&quot;  &quot;B&quot;  &quot;A&quot;  &quot;B&quot;  &quot;A&quot;  &quot;A&quot; 
+## [19,] &quot;B&quot;  &quot;A&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;A&quot;  &quot;A&quot;  &quot;A&quot; 
 ## [20,] &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;  &quot;B&quot;</code></pre>
-<p>While there is agreement for most of the examples, there are a few discrepancies. Using a “majority rules” approach, we run into issue with #19 as it is evenly split. In those cases we will use the letter predicted by the seventh predictor, as it had the lowest out-of-sample error rate.</p>
+<p>While there is agreement for most of the examples, there are a few discrepancies. Using a “majority rules” approach, we run into issue with #8 and #19 as they are evenly split. In those cases we will use the letter predicted by the fifth predictor, as it had the lowest out-of-sample error rate.</p>
 <pre class="r"><code>answers &lt;- c(&quot;B&quot;,&quot;A&quot;,&quot;B&quot;,&quot;A&quot;,&quot;A&quot;,&quot;E&quot;,&quot;D&quot;,&quot;B&quot;,&quot;A&quot;,&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;B&quot;,&quot;A&quot;,&quot;E&quot;,&quot;E&quot;,&quot;A&quot;,&quot;B&quot;,&quot;B&quot;,&quot;B&quot;)</code></pre>
 <p>We will use the suggested function for saving the predictions as files.</p>
 <pre class="r"><code>pml_write_files = function(x) {
