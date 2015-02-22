@@ -1,0 +1,129 @@
+---
+title: 'Practical Machine Learning: Human Activity Recognition'
+author: "Kent English"
+date: "22/02/2015"
+output: html_document
+---
+
+The Human Activity Recognition (HAR) dataset provides a wide range of measurements for subjects performing weight-lifting exercises along with an indicator for how well the exercise was performed. In this study we will be building a model to predict that outcome from a subset of the measurements.
+
+```{r, echo=FALSE}
+library(caret)
+```
+
+```{r}
+set.seed(54321)
+trainingAll <- read.csv("pml-training.csv")
+dim(trainingAll)
+```
+
+The training set has 160 columns and 19622 rows. Examining the data reveals that many of these columns can be dropped. The first 7 columns contain metadata about the subject, when the entry occurred, etc. Many other columns contain primarily NA or empty strings. We will subset the dataframe to only include data-rich columns.
+
+```{r}
+trainingSubset <- trainingAll[, c(8:11, 37:49, 60:68, 84:86, 102, 113:124, 140, 151:160)]
+names(trainingSubset)
+```
+
+We will use k-fold cross validation with k set to 8.
+
+```{r, cache=TRUE}
+k = 8
+folds <- createFolds(trainingSubset$classe, k)
+sapply(folds, length)
+```
+
+We need to split each fold into a training and test set.
+
+```{r, cache=TRUE}
+training <- list()
+testing <- list()
+for (i in 1:k) {
+  fold <- trainingSubset[folds[[i]],]
+  inTrain <- createDataPartition(y=fold$classe, p=0.75, list=FALSE)
+  training[[i]] <- fold[inTrain,]
+  testing[[i]] <- fold[-inTrain,]
+}
+```
+
+Now that we have our training and test sets, we will build a Random Forest predictor. We will use Random Forest because it tends to be accurate and it works well with non-linear data.
+
+
+```{r, cache=TRUE}
+modFit <- list()
+for (i in 1:k) {
+  modFit[[i]] <- train(classe ~ ., method="rf", data=training[[i]])
+}
+# Example
+modFit[[1]]
+```
+
+To calculate the in-sample error rate we will average the results from each fold.
+
+```{r}
+mean(sapply(modFit, function(m) { 1 - max(m$results$Accuracy) }))
+```
+
+Now we will test our predictors on our test sets.
+
+```{r}
+pred <- list()
+for (i in 1:k) {
+  pred[[i]] <- predict(modFit[[i]], testing[[i]])
+}
+# Example
+table(pred[[1]], testing[[1]]$classe)
+```
+
+To calculate the out-of-sample error rate we will first calculate the error rate on each fold and then average them.
+
+```{r}
+errorRate <- sapply(1:k, function(i) {
+  correct <- pred[[i]] == testing[[i]]$classe
+  1 - sum(correct) / length(correct)
+})
+errorRate
+mean(errorRate)
+```
+
+Surprisingly, the out-of-sample error rate is in fact lower than the in-sample error rate. It is now time to apply our predictors to the test set.
+
+```{r}
+testingAll <- read.csv("pml-testing.csv")
+dim(testingAll)
+```
+
+We will subset the testing data in the same way as the training data.
+
+```{r}
+testingSubset <- testingAll[, c(8:11, 37:49, 60:68, 84:86, 102, 113:124, 140, 151:160)]
+```
+
+We will apply each predictor to the test set.
+
+```{r}
+predictions <- sapply(1:8, function(i) {
+  predict(modFit[[i]], testingSubset)
+})
+predictions
+```
+
+While there is agreement for most of the examples, there are a few discrepancies. Using a "majority rules" approach, we run into issue with #8 and #19 as they are evenly split. In those cases we will use the letter predicted by the seventh predictor, as it had the lowest out-of-sample error rate.
+
+```{r}
+answers <- c("B","A","B","A","A","E","D","B","A","A","B","C","B","A","E","E","A","B","B","B")
+```
+
+We will use the suggested function for saving the predictions as files.
+
+```{r}
+pml_write_files = function(x) {
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_", i, ".txt")
+    write.table(x[i], file=filename, quote=FALSE, row.names=FALSE, col.names=FALSE)
+  }
+}
+pml_write_files(answers)
+```
+
+This strategy resulted in 20/20 correct answers. The Random Forest approach clearly works well with this sort of data.
